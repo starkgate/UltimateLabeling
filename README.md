@@ -34,38 +34,40 @@ The integrated object detectors and trackers are based on the following codes:
 
 ## Installation
 
-Start by cloning the repository on your computer:
+Start by cloning the repository in your computer's home directory (there are some hard-coded paths in the code I haven't got rid of yet):
 ```bash
-git clone https://github.com/alexandre01/UltimateLabeling.git
-cd UltimateLabeling
+cd ~
+git clone https://github.com/starkgate/UltimateLabeling.git
 ```
 
 We recommend installing the required packages in a virtual environment to avoid any library versions conflicts. The following will do this for you:
 ```bash
-virtualenv --no-site-packages venv
+cd ~/UltimateLabeling
+
+# prepare the virtual environment for the client
+virtualenv venv
 source venv/bin/activate
 pip install -r requirements.txt
-```
 
-Otherwise, just install the requirements on your main Python environment using `pip` as follows:
-```bash
-pip install -r requirements
+# prepare the virtual environment for the siamMask utility
+cd ~/UltimateLabeling/siamMask
+virtualenv venv
+source venv/bin/activate
+pip install -r requirements.txt
+bash setup.sh
+
+# prepare the virtual environment for the detection utility
+cd ~/UltimateLabeling/detection
+virtualenv venv
+source venv/bin/activate
+pip install -r requirements.txt
+bash setup.sh
 ```
 
 Finally, open the GUI using: 
 ```bash
+cd ~/UltimateLabeling
 python -m ultimatelabeling.main
-```
-
-## Remote server configuration
-To configure the remote GPU server (using the code in [server files](https://github.com/alexandre01/UltimateLabeling_server).), follow the steps below:
-
-```bash
-git clone https://github.com/alexandre01/UltimateLabeling_server.git
-cd UltimateLabeling_server
-pip install -r requirements.txt
-bash siamMask/setup.sh
-bash detection/setup.sh
 ```
 
 The data images and videos should be placed in the folder `data`, similarly to the client code.
@@ -99,8 +101,6 @@ Keyboard:
 - T: start/stop tracking (last used tracker)
 - Numberpad: assign given class_id
 - Spacebar: play the video
-
-
 
 Mouse:
 - Click: select bounding box
