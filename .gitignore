@@ -11,3 +11,6 @@ venv
 data
 */env
 */__pycache__
+detection/darknet/
+detection/yolov3/weights/
+siamMask/pretrained
