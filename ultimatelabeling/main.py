@@ -126,8 +126,6 @@ class CentralWidget(QWidget, StateListener):
         image_box = QGroupBox("Image")
         image_layout = QVBoxLayout()
         self.img_widget.setMinimumWidth(600)
-        self.img_widget.setMaximumWidth(2000)
-        self.img_widget.setMaximumHeight(2000)
         image_layout.addWidget(self.img_widget)
         self.slider.setMaximumHeight(60)
         image_layout.addWidget(self.slider)
@@ -135,7 +133,7 @@ class CentralWidget(QWidget, StateListener):
         main_layout.addWidget(image_box)
 
         control_box = QGroupBox("Control")
-        control_box.setMaximumWidth(600)
+        control_box.setMaximumWidth(500)
         control_layout = QVBoxLayout()
         control_layout.addWidget(self.player)
         control_layout.addWidget(self.ssh_login)

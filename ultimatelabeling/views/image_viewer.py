@@ -339,7 +339,7 @@ class ImageWidget(QWidget, StateListener, KeyboardListener):
     def update_zoom_offset(self):
         M = np.float32([[self.zoom * self.img_scale, 0, self.offset.x()],
                         [0, self.zoom * self.img_scale, self.offset.y()]])
-        self.canvas = cv2.warpAffine(self.img, M, (1500, 1200), borderValue=Theme.get_image_bg(self.state.theme))
+        self.canvas = cv2.warpAffine(self.img, M, (1500, 1200), borderValue=Theme.get_image_bg(self.state.theme), flags=cv2.INTER_NEAREST)
 
         self.state.visible_area = self.get_visible_area()
 

@@ -5,6 +5,7 @@ build/
 *.egg-info
 .eggs/
 __pycache__
+state.pkl
 dist/
 output/
 venv
