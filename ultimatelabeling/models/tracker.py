@@ -60,7 +60,7 @@ class SiamMaskTracker(Tracker):
 
 
 class SocketTracker(Tracker):
-    HOST = "128.178.17.112"
+    HOST = "localhost"
     PORT = 8787
     OK_SIGNAL, TERMINATE_SIGNAL = b"ok", b"terminate"
 

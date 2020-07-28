@@ -4,6 +4,7 @@ from scp import SCPClient, SCPException
 import time
 import json
 import socket
+import subprocess
 
 from PyQt5.QtWidgets import QGroupBox, QLabel, QLineEdit, QFormLayout, QPushButton, QMessageBox
 from PyQt5.QtCore import QThread, pyqtSignal
@@ -12,36 +13,6 @@ from ultimatelabeling.config import OUTPUT_DIR, SERVER_DIR
 
 
 class SSHLogin(QGroupBox, StateListener):
-    def __init__(self, state):
-        super().__init__("SSH login")
-
-        self.state = state
-        self.state.add_listener(self)
-
-        self.ssh_client = paramiko.SSHClient()
-        self.ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-
-        form_layout = QFormLayout()
-
-        self.hostname = QLineEdit()
-        form_layout.addRow(QLabel("Host IP:"), self.hostname)
-
-        self.username = QLineEdit()
-        form_layout.addRow(QLabel("Username:"), self.username)
-
-        self.password = QLineEdit()
-        self.password.setEchoMode(QLineEdit.Password)
-        form_layout.addRow(QLabel("Password:"), self.password)
-
-        self.connect_button = QPushButton("Connect")
-        self.connect_button.clicked.connect(self.on_connect_button_clicked)
-        form_layout.addRow(self.connect_button)
-
-        self.setLayout(form_layout)
-        self.setFixedWidth(250)
-
-        self.load_credentials()
-
     def load_credentials(self):
         self.hostname.setText(self.state.ssh_credentials.hostname)
         self.username.setText(self.state.ssh_credentials.username)
@@ -50,92 +21,17 @@ class SSHLogin(QGroupBox, StateListener):
     def save_credentials(self, hostname, username, password):
         self.state.ssh_credentials = SSHCredentials(hostname, username, password)
 
-    def on_connect_button_clicked(self):
-        hostname, username, password = self.hostname.text(), self.username.text(), self.password.text()
-
-        try:
-            self.ssh_client.connect(hostname, username=username, password=password, timeout=8)
-        except (socket.error, paramiko.SSHException) as e:
-            QMessageBox.warning(self, "", "Couldn't connect to the server.\n{}".format(str(e)))
-        else:
-            self.save_credentials(hostname, username, password)
-            self.connect_button.setText("Connected")
-            self.connect_button.setEnabled(False)
-
-            sftp = self.ssh_client.open_sftp()
-    
-            try:
-                sftp.stat('UltimateLabeling_server')  # Files already exist on the server
-            except IOError:  # We need to copy files to the server
-                QMessageBox.warning(self, "", "Code is missing on the server.")
-                return
-
-        if self.ssh_client.get_transport():
-            self.state.ssh_connected = True
-
-            self.start_detection_server()
-            self.start_tracking_servers()
-
-            time.sleep(5)  # Let the server some time to start the socket servers
-
-            if self.check_is_running():
-                QMessageBox.information(self, "", "Connected!")
-            else:
-                QMessageBox.information(self, "", "An error occurred. Type `tmux ls` on the server.")
-
     def start_tracking_server(self):
-        stdin, stdout, stderr = self.ssh_client.exec_command("tmux kill-session -t tracking")  # Killing possible previous socket server
-        stdin, stdout, stderr = self.ssh_client.exec_command('cd UltimateLabeling_server && source siamMask/env/bin/activate && tmux new -d -s tracking "CUDA_VISIBLE_DEVICES=0 python -m tracker"')
-
-        print(stdout.read().decode())
-        print(stderr.read().decode())
-
-        errors = stderr.read().decode()
-        if errors:
-            QMessageBox.warning(self, "", errors)
-        else:
-            self.state.tracking_server_running = True
-            print("Tracking server started...")
+        self.state.tracking_server_running = True;
+        print("Tracking server started...")
 
     def start_tracking_servers(self):
-        # Killing possible previous socket server
-        stdin, stdout, stderr = self.ssh_client.exec_command("tmux kill-session -t tracking_1")
-        stdin, stdout, stderr = self.ssh_client.exec_command("tmux kill-session -t tracking_2")
-        # stdin, stdout, stderr = self.ssh_client.exec_command("tmux kill-session -t tracking_3")
-
-        stdin, stdout, stderr = self.ssh_client.exec_command('cd UltimateLabeling_server && source siamMask/env/bin/activate && tmux new -d -s tracking_1 '
-                                                             '"CUDA_VISIBLE_DEVICES=0 python -m tracker -p 8787"')
-
-        stdin, stdout, stderr = self.ssh_client.exec_command('cd UltimateLabeling_server && source siamMask/env/bin/activate && tmux new -d -s tracking_2 '
-                                                             '"CUDA_VISIBLE_DEVICES=0 python -m tracker -p 8788"')
-
-        # stdin, stdout, stderr = self.ssh_client.exec_command('cd UltimateLabeling_server && source siamMask/env/bin/activate && tmux new -d -s tracking_3 '
-        #                                                      '"CUDA_VISIBLE_DEVICES=0 python -m tracker -p 8789"')
-
-        print(stdout.read().decode())
-        print(stderr.read().decode())
-
-        errors = stderr.read().decode()
-        if errors:
-            QMessageBox.warning(self, "", errors)
-        else:
-            self.state.tracking_server_running = True
-            print("Tracking server started...")
+        self.state.tracking_server_running = True;
+        print("Tracking server started...")
 
     def start_detection_server(self):
-        stdin, stdout, stderr = self.ssh_client.exec_command("tmux kill-session -t detection")  # Killing possible previous socket server
-        stdin, stdout, stderr = self.ssh_client.exec_command('cd UltimateLabeling_server && source detection/env/bin/activate && tmux new -d -s detection "CUDA_VISIBLE_DEVICES=0 python -m detector"')
-
-        print(stdout.read().decode())
-        print(stderr.read().decode())
-
-        errors = stderr.read().decode()
-        if errors:
-            QMessageBox.warning(self, "", errors)
-        else:
-            self.state.detection_server_running = True
-            print("Detection server started...")
-
+        self.state.detection_server_running = True;
+        print("Detection server started...")
 
     def start_detached_detection(self, seq_path, crop_area=None, detector="YOLO"):
         stdin, stdout, stderr = self.ssh_client.exec_command("tmux kill-session -t detached")  # Killing possible previous socket server
@@ -143,8 +39,7 @@ class SSHLogin(QGroupBox, StateListener):
         if crop_area is not None:
             coords = crop_area.to_json()
             args += " -c {}".format(" ".join([str(int(x)) for x in coords]))
-        stdin, stdout, stderr = self.ssh_client.exec_command('cd UltimateLabeling_server && source detection/env/bin/activate && tmux new -d -s detached '
-                                                             '"CUDA_VISIBLE_DEVICES=0 python -m detector_detached {}"'.format(args))
+        stdin, stdout, stderr = self.ssh_client.exec_command('cd UltimateLabeling_server && source detection/env/bin/activate && tmux new -d -s detached "CUDA_VISIBLE_DEVICES=0 python -m detector_detached {}"'.format(args))
 
         print(stdout.read().decode())
         print(stderr.read().decode())
@@ -183,22 +78,55 @@ class SSHLogin(QGroupBox, StateListener):
             return
 
     def check_is_running(self):
-        stdin, stdout, stderr = self.ssh_client.exec_command("tmux ls")
-        tmux_out = stdout.read().decode()
+        tmux_out = subprocess.check_output("tmux ls", shell=True)
 
-        if "detection" and "tracking" in tmux_out:
+        if b"detection" and b"tracking" in tmux_out:
             return True
-
         return False
 
     def closeServers(self):
-        if self.ssh_client.get_transport():
-            print("closing servers")
-            stdin, stdout, stderr = self.ssh_client.exec_command("tmux kill-session -t tracking")  # Killing possible previous socket server
-            print(stdout, "+", stderr)
-            stdin, stdout, stderr = self.ssh_client.exec_command("tmux kill-session -t detection")  # Killing possible previous socket server
-            print(stdout, "+", stderr)
-            print("servers closed")
+        print("closing servers")
+        os.system("bash -c /home/u42/UltimateLabeling_server/stop.sh")
+        print("servers closed")
+        
+    def __init__(self, state):
+        super().__init__("SSH login")
+        subprocess.check_output("bash -c /home/u42/UltimateLabeling_server/start.sh", shell=True)
+
+        self.state = state
+        self.state.add_listener(self)
+
+        self.ssh_client = paramiko.SSHClient()
+        self.ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+        form_layout = QFormLayout()
+
+        self.hostname = QLineEdit()
+        form_layout.addRow(QLabel("Host IP:"), self.hostname)
+
+        self.username = QLineEdit()
+        form_layout.addRow(QLabel("Username:"), self.username)
+
+        self.password = QLineEdit()
+        self.password.setEchoMode(QLineEdit.Password)
+        form_layout.addRow(QLabel("Password:"), self.password)
+
+        self.connect_button = QPushButton("Connect")
+        form_layout.addRow(self.connect_button)
+
+        self.setLayout(form_layout)
+        self.setFixedWidth(250)
+
+        self.load_credentials()
+        
+        hostname, username, password = self.hostname.text(), self.username.text(), self.password.text()
+
+        self.save_credentials(hostname, username, password)
+        self.connect_button.setText("Connected")
+        self.connect_button.setEnabled(False)
+
+        self.start_detection_server()
+        self.start_tracking_servers()
 
 
 class SCPThread(QThread):

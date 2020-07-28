@@ -27,11 +27,12 @@ class Detector:
 
 
 class SocketDetector(Detector):
-    HOST = "128.178.17.112"
+    HOST = "localhost"
     PORT = 8786
     OK_SIGNAL, TERMINATE_SIGNAL = b"ok", b"terminate"
 
     def init(self):
+        print("Connecting to detector socket: ", self.HOST, self.PORT)
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client_socket.connect((self.HOST, self.PORT))
         self.receive_ok_signal()

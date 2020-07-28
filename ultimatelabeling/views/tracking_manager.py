@@ -112,13 +112,18 @@ class TrackingButtons(QGroupBox):
         if not self.state.tracking_server_running and self.i >= 1:
             QMessageBox.warning(self, "", "Tracking server is not connected.")
             return
+            
+        if not self.state.current_detection is None:
+            if not self.thread.isRunning():
+                self.thread.start()
+                self.parent.select(self.i)
 
-        if not self.thread.isRunning():
-            self.thread.start()
-            self.parent.select(self.i)
-
-            self.start_button.hide()
-            self.stop_button.show()
+                self.start_button.hide()
+                self.stop_button.show()
+            else:
+                print("Thread is running.")
+        else:
+            print("No bounding box selected for tracking.")
 
     def on_stop_tracking(self):
         if self.thread.isRunning():
