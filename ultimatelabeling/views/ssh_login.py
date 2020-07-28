@@ -86,12 +86,12 @@ class SSHLogin(QGroupBox, StateListener):
 
     def closeServers(self):
         print("closing servers")
-        os.system("bash -c /home/u42/UltimateLabeling_server/stop.sh")
+        os.system("bash -c ~/UltimateLabeling/stop.sh")
         print("servers closed")
         
     def __init__(self, state):
         super().__init__("SSH login")
-        subprocess.check_output("bash -c /home/u42/UltimateLabeling_server/start.sh", shell=True)
+        subprocess.check_output("bash -c ~/UltimateLabeling/start.sh", shell=True)
 
         self.state = state
         self.state.add_listener(self)
