@@ -1,0 +1,6 @@
+classes = 6
+train = aerial_dataset/train.txt
+valid = aerial_dataset/test.txt
+names = yolo_cfg/topview-all.names
+backup = backup/
+gpus = 0
