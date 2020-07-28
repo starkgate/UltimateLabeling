@@ -24,7 +24,6 @@ class VideoSlider(QWidget, StateListener, KeyboardListener):
         self.slider.valueChanged.connect(lambda: self.state.set_current_frame(self.slider.value(), frame_mode=FrameMode.SLIDER))
 
         self.label = QLabel()
-        self.label.setFixedWidth(150)
 
         self.file_name_label = QLabel()
         self.file_name_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)

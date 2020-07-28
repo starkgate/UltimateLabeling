@@ -218,7 +218,6 @@ class ImageWidget(QWidget, StateListener, KeyboardListener):
         self.cursor_offset = None
         self.holding_ctrl = False
 
-        self.setFixedSize(900, 900)
         self.setMouseTracking(True)
 
         self.current_frame = None
@@ -340,7 +339,7 @@ class ImageWidget(QWidget, StateListener, KeyboardListener):
     def update_zoom_offset(self):
         M = np.float32([[self.zoom * self.img_scale, 0, self.offset.x()],
                         [0, self.zoom * self.img_scale, self.offset.y()]])
-        self.canvas = cv2.warpAffine(self.img, M, (900, 900), borderValue=Theme.get_image_bg(self.state.theme))
+        self.canvas = cv2.warpAffine(self.img, M, (1500, 1200), borderValue=Theme.get_image_bg(self.state.theme))
 
         self.state.visible_area = self.get_visible_area()
 

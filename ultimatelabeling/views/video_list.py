@@ -14,8 +14,6 @@ class VideoListWidget(QListWidget, StateListener):
 
         self.itemDoubleClicked.connect(self.on_list_clicked)
 
-        self.setFixedWidth(150)
-
     def on_list_clicked(self, item):
         self.state.frame_mode = FrameMode.MANUAL
         self.state.set_current_video(item.text())

@@ -6,7 +6,7 @@ class Bbox:
 
     @staticmethod
     def get_thickness():
-        return 2
+        return 1
 
     @staticmethod
     def get_anchor_size():
@@ -162,7 +162,7 @@ class Keypoints:
 
         self.coords = np.array(coords, dtype=float)
 
-    def get_anchors(self, factor=2):
+    def get_anchors(self, factor=1):
         anchors = {}
 
         sRA = 1 * factor
