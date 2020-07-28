@@ -9,6 +9,8 @@
 
 A multi-purpose Video Labeling GUI in Python with integrated SOTA detector and tracker. Developed using PyQt5.
 
+The fork includes better functionality for Linux and Windows setups, as well as the merging of UltimateLabeling's server and client into just one utility.
+
 ## Features
 - SSH connection to a remote GPU server (see below to configure the server)
 - YOLO and OpenPifPaf integrated object & pose detectors (single frame/video mode)
