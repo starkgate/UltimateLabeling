@@ -9,3 +9,5 @@ dist/
 output/
 venv
 data
+*/env
+*/__pycache__
