@@ -1,4 +1,4 @@
-cd "~/UltimateLabeling"
+cd ~/UltimateLabeling
 
 tmux kill-session -t tracking_1
 tmux kill-session -t tracking_2

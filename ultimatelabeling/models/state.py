@@ -66,7 +66,7 @@ class State:
     def get_file_name(self, frame=None):
         if frame is None:
             frame = self.current_frame
-
+            
         file_path = self.file_names[frame]
         base = os.path.basename(file_path)
         return os.path.splitext(base)[0]
@@ -128,6 +128,7 @@ class State:
 
     def set_current_frame(self, current_frame, frame_mode=None):
         self.track_info.save_to_disk()
+        self.track_info.img_size = self.image_size
 
         self.current_frame = current_frame
 
