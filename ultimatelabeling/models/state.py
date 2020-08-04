@@ -116,7 +116,9 @@ class State:
 
     def update_file_names(self):
         if self.current_video:
-            self.file_names = sorted(glob.glob(os.path.join(DATA_DIR, self.current_video, '*.jpg')), key = utils.natural_sort_key)
+            file_names = glob.glob(os.path.join(DATA_DIR, self.current_video, '*.jpg'))
+            file_names.extend(glob.glob(os.path.join(DATA_DIR, self.current_video, '*.png')))
+            self.file_names = sorted(file_names, key = utils.natural_sort_key)
             self.nb_frames = len(self.file_names)
 
     def save_state(self):
