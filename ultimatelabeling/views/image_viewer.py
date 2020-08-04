@@ -363,6 +363,9 @@ class ImageWidget(QWidget, StateListener, KeyboardListener):
     def on_key_ctrl(self, holding):
         self.holding_ctrl = holding
 
+    def on_key_delete(self):
+        self.state.remove_current_frame()
+
     def wheelEvent(self, event):
         pos = event.pos()
         old_p = (pos - self.offset) / self.zoom

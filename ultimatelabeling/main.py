@@ -5,7 +5,6 @@ from .views import *
 from .models import State, StateListener, KeyboardNotifier
 from .styles import Theme
 
-
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -54,7 +53,7 @@ class MainWindow(QMainWindow):
         self.center()
 
     def open_url(self):
-        url = QtCore.QUrl('https://github.com/alexandre01/UltimateLabeling')
+        url = QtCore.QUrl('https://github.com/starkgate/UltimateLabeling')
         if not QtGui.QDesktopServices.openUrl(url):
             QtGui.QMessageBox.warning(self, 'Open Url', 'Could not open url')
 

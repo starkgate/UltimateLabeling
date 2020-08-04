@@ -66,10 +66,33 @@ class State:
     def get_file_name(self, frame=None):
         if frame is None:
             frame = self.current_frame
-            
+
         file_path = self.file_names[frame]
         base = os.path.basename(file_path)
         return os.path.splitext(base)[0]
+
+    def remove_current_frame(self):
+        current_file = self.file_names[self.current_frame]
+        base_path, file_name = os.path.split(current_file)
+        file_name, file_ext = os.path.splitext(file_name)
+        dataset_name = os.path.split(base_path)[1]
+
+        print("Removing current frame: ", current_file)
+        try:
+            # rename current file
+            os.rename(current_file, current_file + '.not')
+            # rename current file's labels
+            current_file_label = os.path.join('output', dataset_name, file_name) + '.txt'
+            current_file_yolo_label = os.path.join('output', dataset_name, 'yolo', file_name) + '.txt'
+            os.rename(current_file_label, current_file_label + '.not')
+            os.rename(current_file_yolo_label, current_file_yolo_label + '.not')
+        except FileNotFoundError as e:
+            print(e)
+
+        del self.file_names[self.current_frame]
+        self.nb_frames -= 1
+        self.increase_current_frame(frame_mode=FrameMode.MANUAL, speed=+1)
+        self.increase_current_frame(frame_mode=FrameMode.MANUAL, speed=-1)
 
     def get_file_names(self):
         for frame in range(self.nb_frames):

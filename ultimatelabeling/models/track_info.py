@@ -185,7 +185,6 @@ class TrackInfo:
 
         if self.img_size != (0, 0):
             # Save labels in yolo format
-            # TODO: How the fuck do I handle panda data frames properly?
             h, w = self.img_size
             df_yolo = df[["class_id", "x", "y", "w", "h"]].copy()
             df_yolo[["x", "w"]] = df_yolo[["x", "w"]].copy().div(w)
