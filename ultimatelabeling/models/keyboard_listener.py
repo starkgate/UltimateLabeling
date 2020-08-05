@@ -3,22 +3,28 @@ from PyQt5.QtGui import QKeyEvent
 
 
 class KeyboardNotifier:
-    NUMBERS_KEYS = [Qt.Key_0, Qt.Key_1, Qt.Key_2, Qt.Key_3, Qt.Key_4, Qt.Key_5, Qt.Key_6, Qt.Key_7, Qt.Key_8, Qt.Key_9]
-
     def __init__(self):
+        # keyboard shortcuts
+        self.key_dict = {
+            "trackers": [Qt.Key_E, Qt.Key_R, Qt.Key_T],
+            "play_pause": Qt.Key_Space,
+            "left": [Qt.Key_Left, Qt.Key_A],
+            "right": [Qt.Key_Right, Qt.Key_D],
+            "numbers": [Qt.Key_0, Qt.Key_1, Qt.Key_2, Qt.Key_3, Qt.Key_4, Qt.Key_5, Qt.Key_6, Qt.Key_7, Qt.Key_8, Qt.Key_9],
+        }
         self.listeners = set()
 
     def keyPressEvent(self, event):
         if type(event) != QKeyEvent:
             event.ignore()
 
-        if event.key() == Qt.Key_Space:
+        if event.key() == self.key_dict["play_pause"]:
             self.notify_listeners("on_key_play_pause")
 
-        if event.key() in [Qt.Key_Left, Qt.Key_A]:
+        if event.key() in self.key_dict["left"]:
             self.notify_listeners("on_key_left")
 
-        if event.key() in [Qt.Key_Right, Qt.Key_D]:
+        if event.key() in self.key_dict["right"]:
             self.notify_listeners("on_key_right")
 
         if event.key() == Qt.Key_Control:
@@ -27,14 +33,14 @@ class KeyboardNotifier:
         if event.key() == Qt.Key_Delete:
             self.notify_listeners("on_key_delete")
 
-        if event.key() in self.NUMBERS_KEYS:
+        if event.key() in self.key_dict["numbers"]:
             self.notify_listeners("on_key_number", self.NUMBERS_KEYS.index(event.key()))
 
         if event.key() in [Qt.Key_W, Qt.Key_S]:
             self.notify_listeners("on_key_ws", event.key() == Qt.Key_W)
 
-        if event.key() in [Qt.Key_E, Qt.Key_R, Qt.Key_T]:
-            self.notify_listeners("on_key_tracker", [Qt.Key_E, Qt.Key_R, Qt.Key_T].index(event.key()))
+        if event.key() in self.key_dict["trackers"]:
+            self.notify_listeners("on_key_tracker", self.key_dict["trackers"].index(event.key()))
 
     def keyReleaseEvent(self, event):
           if event.key() == Qt.Key_Control:

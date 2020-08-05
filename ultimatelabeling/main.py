@@ -81,7 +81,7 @@ class CentralWidget(QWidget, StateListener):
         self.keyboard_notifier = KeyboardNotifier()
 
         self.video_list_widget = VideoListWidget(self.state)
-        self.img_widget = ImageWidget(self.state)
+        self.img_widget = ImageWidget(self.state, self.keyboard_notifier)
         self.slider = VideoSlider(self.state, self.keyboard_notifier)
         self.player = PlayerWidget(self.state)
         self.theme_picker = ThemePicker(self.state)

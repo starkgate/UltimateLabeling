@@ -1,10 +1,10 @@
 import cv2
 from PyQt5.QtWidgets import QWidget, QApplication
-from PyQt5.QtCore import QPoint, Qt, QThread, pyqtSignal
-from PyQt5.QtGui import QImage, QPainter
+from PyQt5.QtCore import QPoint, Qt, QThread, pyqtSignal, QEvent
+from PyQt5.QtGui import QImage, QPainter, QKeyEvent
 from ultimatelabeling.models import StateListener, FrameMode
 from ultimatelabeling.utils import draw_detection
-from ultimatelabeling.models import KeyboardListener
+from ultimatelabeling.models import KeyboardListener, KeyboardNotifier
 from ultimatelabeling.models.polygon import Bbox
 from ultimatelabeling.models.track_info import Detection
 from ultimatelabeling.styles import Theme
@@ -196,11 +196,12 @@ class DetectionQuadTree:
 class ImageWidget(QWidget, StateListener, KeyboardListener):
     signal = pyqtSignal()
 
-    def __init__(self, state):
+    def __init__(self, state, keyboard_notifier):
         super().__init__()
 
         self.state = state
         self.state.add_listener(self)
+        self.keyboard_notifier = keyboard_notifier
 
         self.MIN_ZOOM, self.MAX_ZOOM = 0.5, 8.0
         self.zoom = 1.0
@@ -428,7 +429,6 @@ class ImageWidget(QWidget, StateListener, KeyboardListener):
                     self.current_event = Event.DRAWING
                     track_id = self.state.track_info.get_min_available_track_id()
                     self.current_detection = Detection(track_id=track_id, bbox=Bbox(pos.x(), pos.y(), 0, 0))
-
                     self.on_current_frame_change()
                 else:
                     self.current_event = Event.MOVING
@@ -516,6 +516,9 @@ class ImageWidget(QWidget, StateListener, KeyboardListener):
             if self.current_event != Event.MOVING:
                 self.current_detection.bbox.correct_negative_size()
                 self.state.set_current_detection(self.current_detection)
+
+            if self.current_event == Event.DRAWING:
+                self.keyboard_notifier.keyPressEvent(QKeyEvent(QEvent.KeyPress, self.keyboard_notifier.key_dict["trackers"][0], Qt.NoModifier))
 
             QApplication.restoreOverrideCursor()
             self.current_event = None
