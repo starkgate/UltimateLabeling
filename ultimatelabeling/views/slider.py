@@ -71,9 +71,7 @@ class VideoSlider(QWidget, StateListener, KeyboardListener):
 
     def update_label(self):
         self.label2.setText("/{}".format(self.state.nb_frames - 1))
-        self.frame_number.blockSignals(True)
         self.frame_number.setText(str(self.state.current_frame))
-        self.frame_number.blockSignals(False)
         self.file_name_label.setText(self.state.file_names[self.state.current_frame])
 
     def on_video_change(self):
@@ -107,4 +105,5 @@ class VideoSlider(QWidget, StateListener, KeyboardListener):
 
     def on_text_changed(self):
         self.state.set_current_frame(int(self.frame_number.text()), frame_mode=FrameMode.MANUAL)
+        self.slider.setFocus()
         self.on_current_frame_change()
