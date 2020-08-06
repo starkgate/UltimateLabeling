@@ -5,7 +5,7 @@ import math
 class Bbox:
     @staticmethod
     def get_thickness():
-        return 2
+        return 1
 
     @staticmethod
     def get_anchor_size():
