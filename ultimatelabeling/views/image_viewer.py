@@ -207,7 +207,7 @@ class ImageWidget(QWidget, StateListener, KeyboardListener):
         self.offset = QPoint(0., 0.)
         self.original_img = None
         self.img = None
-        self.transparency = 0.6 # how transparent are the bboxes
+        self.transparency = 0.8 # how transparent are the bboxes
 
         self.anchors_quadtree = None
         self.detections_quadtree = None

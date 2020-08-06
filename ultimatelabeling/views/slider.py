@@ -71,7 +71,7 @@ class VideoSlider(QWidget, StateListener, KeyboardListener):
 
     def on_video_change(self):
         self.on_current_frame_change()
-        self.frame_number.setValidator(QIntValidator(1, self.state.nb_frames - 1, self))
+        self.frame_number.setValidator(QIntValidator(0, self.state.nb_frames - 1, self))
         self.slider.setMaximum(self.state.nb_frames - 1)
 
     def on_key_left(self):
