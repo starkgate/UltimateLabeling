@@ -207,6 +207,7 @@ class ImageWidget(QWidget, StateListener, KeyboardListener):
         self.offset = QPoint(0., 0.)
         self.original_img = None
         self.img = None
+        self.transparency = 0.6 # how transparent are the bboxes
 
         self.anchors_quadtree = None
         self.detections_quadtree = None
@@ -307,6 +308,7 @@ class ImageWidget(QWidget, StateListener, KeyboardListener):
             draw_detection(self.img, self.current_detection, draw_anchors=False,
                            kps_show_bbox=self.state.keypoints_show_bbox, kps_instance_color=self.state.keypoints_instance_color,
                            bbox_class_color=self.state.bbox_class_color)
+            self.img = cv2.addWeighted(self.original_img, self.transparency, self.img, 1 - self.transparency, 0)
 
     def on_video_change(self):
         self.on_current_frame_change()

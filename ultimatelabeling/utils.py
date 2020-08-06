@@ -21,7 +21,6 @@ def get_color(id):
 
 
 def draw_detection(img, detection, draw_anchors=True, color=None, kps_show_bbox=False, kps_instance_color=False, bbox_class_color=False, label=None):
-
     if detection.keypoints:
         if not kps_show_bbox:
             draw_keypoints(img, detection.keypoints, object_id=detection.track_id if kps_instance_color else None)
@@ -50,8 +49,7 @@ def draw_detection(img, detection, draw_anchors=True, color=None, kps_show_bbox=
     if detection.keypoints:
         draw_keypoints(img, detection.keypoints, object_id=detection.track_id if kps_instance_color else None)
 
-
-def draw_label(img, bbox, label, thickness, color, height=12):
+def draw_label(img, bbox, label, thickness, color, height=0):
     b = bbox.pos.copy()
     s = bbox.size.copy()
     b -= thickness / 2, height

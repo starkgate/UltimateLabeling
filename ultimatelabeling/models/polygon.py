@@ -68,7 +68,7 @@ class Bbox:
             self.size[1] *= -1
             self.pos[1] -= self.size[1]
 
-    def get_anchors(self, factor=2):
+    def get_anchors(self, factor=1):
         anchors = {}
 
         xmin, ymin, xmax, ymax = self.x1y1x2y2
