@@ -13,7 +13,6 @@ import math
 import time
 from ultimatelabeling import utils
 
-
 class Event:
     DRAWING = "drawing"
     RESIZING = "resizing"

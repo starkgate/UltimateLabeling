@@ -3,6 +3,8 @@ from PyQt5.QtCore import QThread, pyqtSignal
 from ultimatelabeling.models.tracker import SocketTracker, KCFTracker
 from ultimatelabeling.models import Detection, FrameMode
 from ultimatelabeling.models import KeyboardListener
+import signal
+
 
 PORTS = [0, 8787, 8788]
 

@@ -23,27 +23,24 @@ class VideoSlider(QWidget, StateListener, KeyboardListener):
         self.slider.setStyleSheet(open(os.path.join(RESOURCES_DIR, 'slider.style')).read())
         self.slider.valueChanged.connect(lambda: self.state.set_current_frame(self.slider.value(), frame_mode=FrameMode.SLIDER))
 
-        self.label1 = QLabel("Frame ")
-        self.label1.setMaximumWidth(40)
-        self.label1.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
-        self.frame_number = QLineEdit("1")
+        self.label = QLabel()
+        self.label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+        self.label.setMaximumWidth(130)
+        self.frame_number = QLineEdit()
         self.frame_number.setMaximumWidth(50)
         self.frame_number.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         self.frame_number.setValidator(QIntValidator(0, self.state.nb_frames - 1, self))
-        self.label2 = QLabel()
-        self.label2.setMaximumWidth(45)
-        self.label2.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
 
         frame_layout = QHBoxLayout()
-        frame_layout.addWidget(self.label1)
+        frame_layout.addWidget(self.label)
         frame_layout.addWidget(self.frame_number)
-        frame_layout.addWidget(self.label2)
 
         self.file_name_label = QLabel()
         self.file_name_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
 
         self.on_video_change()
-        self.frame_number.returnPressed.connect(self.on_text_changed)
+        self.frame_number.returnPressed.connect(self.on_return_pressed)
+        self.test = 0
 
         layout = QVBoxLayout()
 
@@ -70,8 +67,7 @@ class VideoSlider(QWidget, StateListener, KeyboardListener):
         self.update_label()
 
     def update_label(self):
-        self.label2.setText("/{}".format(self.state.nb_frames - 1))
-        self.frame_number.setText(str(self.state.current_frame))
+        self.label.setText("Frame {}/{}".format(self.state.current_frame, self.state.nb_frames - 1)) #causes a SEGFAULT?!
         self.file_name_label.setText(self.state.file_names[self.state.current_frame])
 
     def on_video_change(self):
@@ -103,7 +99,7 @@ class VideoSlider(QWidget, StateListener, KeyboardListener):
             if current_detection.track_id not in track_ids:
                 self.state.set_current_detection(current_detection)
 
-    def on_text_changed(self):
+    def on_return_pressed(self):
         self.state.set_current_frame(int(self.frame_number.text()), frame_mode=FrameMode.MANUAL)
         self.slider.setFocus()
         self.on_current_frame_change()
