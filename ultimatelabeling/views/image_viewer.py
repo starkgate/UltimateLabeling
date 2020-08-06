@@ -381,6 +381,10 @@ class ImageWidget(QWidget, StateListener, KeyboardListener):
 
         self.update_zoom_offset()
 
+    def resizeEvent(self, event):
+        self.state.increase_current_frame(frame_mode=FrameMode.MANUAL, speed=+1)
+        self.state.increase_current_frame(frame_mode=FrameMode.MANUAL, speed=-1)
+
     def mousePressEvent(self, event):
         pos = self.get_abs_pos(event.pos())
 

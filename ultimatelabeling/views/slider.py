@@ -40,7 +40,6 @@ class VideoSlider(QWidget, StateListener, KeyboardListener):
 
         self.on_video_change()
         self.frame_number.returnPressed.connect(self.on_return_pressed)
-        self.test = 0
 
         layout = QVBoxLayout()
 
@@ -67,7 +66,7 @@ class VideoSlider(QWidget, StateListener, KeyboardListener):
         self.update_label()
 
     def update_label(self):
-        self.label.setText("Frame {}/{}".format(self.state.current_frame, self.state.nb_frames - 1)) #causes a SEGFAULT?!
+        self.label.setText("Frame {}/{}".format(self.state.current_frame, self.state.nb_frames - 1))
         self.file_name_label.setText(self.state.file_names[self.state.current_frame])
 
     def on_video_change(self):

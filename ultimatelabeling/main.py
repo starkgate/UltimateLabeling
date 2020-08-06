@@ -135,7 +135,7 @@ class CentralWidget(QWidget, StateListener):
         control_box.setMaximumWidth(500)
         control_layout = QVBoxLayout()
         control_layout.addWidget(self.player)
-        control_layout.addWidget(self.ssh_login)
+        #control_layout.addWidget(self.ssh_login) # we don't need this, hide it
         control_layout.addWidget(self.theme_picker)
         control_layout.addWidget(self.options)
         control_layout.addWidget(self.detection_manager)
