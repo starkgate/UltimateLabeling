@@ -12,7 +12,8 @@ class Options(QGroupBox, StateListener):
         self.state = state
         state.add_listener(self)
 
-        self.copy_option_checkbox = QCheckBox("Copy annotations (⇦ ⇨)")
+        self.copy_option_checkbox = QCheckBox("Copy annotation (⇦ ⇨)")
+        self.copy_option_checkbox.setToolTip("Clone the selected bounding box into the previous or next frame, if it isn't already present")
         self.copy_option_checkbox.setCheckState(Qt.Checked if self.state.copy_annotations_option else Qt.Unchecked)
         self.copy_option_checkbox.stateChanged.connect(lambda state: self.state.set_copy_annotations_option(state == Qt.Checked))
 

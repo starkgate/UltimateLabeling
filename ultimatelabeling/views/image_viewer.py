@@ -373,9 +373,9 @@ class ImageWidget(QWidget, StateListener, KeyboardListener):
         old_p = (pos - self.offset) / self.zoom
 
         if event.angleDelta().y() > 0:
-        	self.zoom = self.zoom * 2
+            self.zoom = self.zoom * 2
         else:
-        	self.zoom = self.zoom * .5
+            self.zoom = self.zoom * .5
         self.zoom = max(min(self.zoom, self.MAX_ZOOM), self.MIN_ZOOM)
 
         new_p = old_p * self.zoom + self.offset
@@ -523,10 +523,23 @@ class ImageWidget(QWidget, StateListener, KeyboardListener):
                 self.state.set_current_detection(self.current_detection)
 
             if self.current_event == Event.DRAWING:
-                self.keyboard_notifier.keyPressEvent(QKeyEvent(QEvent.KeyPress, self.keyboard_notifier.key_dict["trackers"][0], Qt.NoModifier))
+                self.keyboard_notifier.auto_track()
 
             QApplication.restoreOverrideCursor()
             self.current_event = None
             self.current_detection = None
             self.current_anchor_key = None
             self.cursor_offset = None
+
+    # jump to the previous / next frame with different bounding boxes
+    def on_key_jump(self, modifiers):
+        if modifiers is modifiers == Qt.ShiftModifier:
+            frame = self.state.current_frame
+            while frame > 0 and self.state.check_frames_equal(frame - 1, frame):
+                frame -= 1 
+            self.state.set_current_frame(frame)
+        else:
+            frame = self.state.current_frame
+            while frame < self.state.nb_frames and self.state.check_frames_equal(frame, frame + 1):
+                frame += 1 
+            self.state.set_current_frame(frame + 1)

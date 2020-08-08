@@ -149,9 +149,16 @@ class TrackInfo:
 
         if not os.path.exists(txt_file):
             return []
-
         df = self.df_from_csv(txt_file)
         return [Detection.from_df(row) for _, row in df.iterrows()]
+
+    def get_track_ids(self, file_name):
+        txt_file = os.path.join(OUTPUT_DIR, "{}/{}.txt".format(self.video_name, file_name))
+
+        if not os.path.exists(txt_file):
+            return []
+            
+        return np.sort(pd.read_csv(txt_file, header=None, usecols=[0], sep=" ").values.flatten())
 
     def load_detections(self, file_name):
         self.file_name = file_name

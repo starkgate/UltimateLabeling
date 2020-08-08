@@ -54,7 +54,7 @@ class SiamMaskTracker(Tracker):
     def track(self, img):
         self.state = siamese_track(self.state, img.copy(), mask_enable=True, refine_enable=True, use_cuda=self.use_cuda)
         bbox = Bbox.from_center_size(self.state['target_pos'], self.state['target_sz'])
-        polygon = Polygon(self.state['ploygon'].flatten())
+        polygon = Polygon(self.state['polygon'].flatten())
 
         return bbox, polygon
 

@@ -2,6 +2,7 @@ import pickle
 import os
 import glob
 import re
+import numpy as np
 from PyQt5.QtCore import QThread, QMutex
 from ultimatelabeling.styles import Theme
 from .ssh_credentials import SSHCredentials
@@ -240,6 +241,14 @@ class State:
                 break
 
         self.notify_listeners("on_detection_change")
+
+    def check_frames_equal(self, frame1, frame2):
+        frame1 = os.path.split(self.file_names[frame1])[1]
+        frame1 = os.path.splitext(frame1)[0]
+        frame2 = os.path.split(self.file_names[frame2])[1]
+        frame2 = os.path.splitext(frame2)[0]
+
+        return np.array_equal(self.track_info.get_track_ids(frame1), self.track_info.get_track_ids(frame2))
     
     def set_current_detection(self, detection):
         self.current_detection = detection
