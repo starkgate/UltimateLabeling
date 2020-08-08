@@ -95,10 +95,12 @@ If you need other file formats for your projects, please write a GitHub issue or
 <img src="docs/keyboard_shortcuts.jpg" width="50%" />
 
 Keyboard:
-- A (or Left key): next frame
+- A (or Left key or Q on AZERTY): next frame
 - D (or Right key): previous frame
 - W/S: class up/down
-- T: start/stop tracking (last used tracker)
+- E: start/stop tracking
+- J/Shift-J: jump to next/previous frame with different bounding boxes than the current frame
+- Delete: remove current frame from list
 - Numberpad: assign given class_id
 - Spacebar: play the video
 
