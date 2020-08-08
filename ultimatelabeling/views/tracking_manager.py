@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QPushButton, QGroupBox, QVBoxLayout, QHBoxLayout, QStyle, QPlainTextEdit, QMessageBox
+from PyQt5.QtWidgets import QPushButton, QGroupBox, QVBoxLayout, QHBoxLayout, QStyle, QPlainTextEdit, QMessageBox, QCheckBox
 from PyQt5.QtCore import QThread, pyqtSignal
 from ultimatelabeling.models.tracker import SocketTracker, KCFTracker
 from ultimatelabeling.models import Detection, FrameMode
@@ -72,17 +72,13 @@ class TrackingThread(QThread):
 
 
 class TrackingButtons(QGroupBox):
-    def __init__(self, state, parent, i, name):
+    def __init__(self, state, parent, index, name, thread):
         super().__init__(name)
 
         self.state = state
         self.parent = parent
-        self.i = i
-
-        if name == "SiamMask":
-            self.thread = TrackingThread(self.state, tracker=SocketTracker, port=PORTS[i])
-        else:
-            self.thread = TrackingThread(self.state, tracker=KCFTracker, state=self.state)
+        self.index = index
+        self.thread = thread
 
         self.thread.err_signal.connect(self.display_err_message)
         self.thread.finished.connect(self.on_finished_tracking)
@@ -92,17 +88,20 @@ class TrackingButtons(QGroupBox):
         self.start_button = QPushButton("Start")
         self.start_button.setIcon(self.style().standardIcon(QStyle.SP_DialogYesButton))
         self.start_button.clicked.connect(self.on_start_tracking)
+        self.start_button.setToolTip("Start tracking")
 
         self.stop_button = QPushButton("Stop")
         self.stop_button.setIcon(self.style().standardIcon(QStyle.SP_DialogNoButton))
         self.stop_button.clicked.connect(self.on_stop_tracking)
+        self.stop_button.setToolTip("Stop tracking")
 
-        self.sync_button = QPushButton("Sync")
-        self.sync_button.clicked.connect(self.on_sync)
+        self.enable_button = QPushButton("Enable")
+        self.enable_button.clicked.connect(self.on_enabled)
+        self.enable_button.setToolTip("Enable this tracker")
 
         layout.addWidget(self.start_button)
         layout.addWidget(self.stop_button)
-        layout.addWidget(self.sync_button)
+        layout.addWidget(self.enable_button)
         self.setLayout(layout)
 
         self.stop_button.hide()
@@ -111,29 +110,25 @@ class TrackingButtons(QGroupBox):
         QMessageBox.warning(self, "", "Error: {}".format(err_message))
 
     def on_start_tracking(self):
-        if not self.state.tracking_server_running and self.i >= 1:
+        if not self.state.tracking_server_running and self.index >= 1:
             QMessageBox.warning(self, "", "Tracking server is not connected.")
             return
             
-        if not self.state.current_detection is None:
-            if not self.thread.isRunning():
+        if self.state.current_detection is None:
+            print("No bounding box selected for tracking.")
+        else:
+            if self.thread.isRunning():
+                print("Thread is running.")
+            else:
                 self.thread.start()
-                self.parent.select(self.i)
+                self.parent.select(self.index)
 
                 self.start_button.hide()
                 self.stop_button.show()
-            else:
-                print("Thread is running.")
-        else:
-            print("No bounding box selected for tracking.")
 
     def on_stop_tracking(self):
         if self.thread.isRunning():
             self.thread.stop()
-
-    def on_sync(self):
-        self.state.frame_mode = FrameMode.CONTROLLED
-        self.parent.select(self.i)
 
     def on_finished_tracking(self):
         if self.thread.isRunning():
@@ -144,33 +139,54 @@ class TrackingButtons(QGroupBox):
         self.stop_button.hide()
         self.start_button.show()
 
+    def on_enabled(self):
+        self.parent.on_enabled(self.index)
 
 class TrackingManager(QGroupBox, KeyboardListener):
     def __init__(self, state):
         super().__init__("Tracking")
         self.state = state
+        self.selected = None
 
+        # define the trackers available
         self.trackers = [
-            TrackingButtons(self.state, self, 0, "KCF"),
-            TrackingButtons(self.state, self, 1, "SiamMask"),
-            TrackingButtons(self.state, self, 2, "SiamMask")
+            TrackingButtons(self.state, self, 0, "KCF", TrackingThread(self.state, tracker=KCFTracker, state=self.state)),
+            TrackingButtons(self.state, self, 1, "SiamMask", TrackingThread(self.state, tracker=SocketTracker, port=8787))
         ]
+        self.trackers[0].setToolTip("Algorithm-based object tracking method")
+        self.trackers[1].setToolTip("Neural network-based object tracking method")
+        self.on_enabled(1) # enable the SiamMask tracker by default
 
+        vlayout = QVBoxLayout()
         layout = QHBoxLayout()
 
         for tracker in self.trackers:
             layout.addWidget(tracker)
 
-        self.setLayout(layout)
+        self.automatic_tracking_checkbox = QCheckBox("Automatic tracking")
+        self.automatic_tracking_checkbox.setToolTip("Automatically run the selected tracking method after creating a new bounding box")
+        self.automatic_tracking_checkbox.setChecked(True)
 
-    def select(self, selected_i):
-        for i, tracker in enumerate(self.trackers):
-            tracker.thread.selected = i == selected_i
+        vlayout.addLayout(layout)
+        vlayout.addWidget(self.automatic_tracking_checkbox)
 
-    def on_key_tracker(self, index):
-        tracker = self.trackers[index]
+        self.setLayout(vlayout)
 
-        if not tracker.thread.isRunning():
-            tracker.on_start_tracking()
-        else:
-            tracker.on_stop_tracking()
+    def on_key_track(self, automatic):
+        if self.selected is not None:
+            tracker = trackers[self.selected]
+            if (automatic and self.automatic_tracking_checkbox.isChecked()) or not automatic:
+                if tracker.thread.isRunning():
+                    tracker.on_stop_tracking()
+                else:
+                    tracker.on_start_tracking()
+
+    def on_enabled(self, index):
+        self.selected = index
+        for tracker in self.trackers:
+            if tracker.index == self.selected:
+                tracker.enable_button.setEnabled(False)
+                tracker.enable_button.setText("Enabled")
+            else:
+                tracker.enable_button.setEnabled(True)
+                tracker.enable_button.setText("Enable")
