@@ -3,7 +3,6 @@ from .image_viewer import ImageWidget
 from .video_list import VideoListWidget
 from .player import PlayerWidget
 from .theme_picker import ThemePicker
-from .ssh_login import SSHLogin
 from .message_progress import MessageProgressBox
 from .tracking_manager import TrackingManager
 from .hungarian_manager import HungarianManager

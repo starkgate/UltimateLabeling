@@ -12,9 +12,9 @@ from PIL import Image
 from os import makedirs
 from os.path import join, isdir, isfile
 
-from siamMask.utils.log_helper import init_log, add_file_handler
-from siamMask.utils.load_helper import load_pretrain
-from siamMask.utils.bbox_helper import get_axis_aligned_bbox, cxy_wh_2_rect
+from .utils.log_helper import init_log, add_file_handler
+from .utils.load_helper import load_pretrain
+from .utils.bbox_helper import get_axis_aligned_bbox, cxy_wh_2_rect
 
 import torch
 from torch.autograd import Variable
@@ -22,10 +22,10 @@ import torch.nn.functional as F
 
 import siamMask.models
 
-from siamMask.utils.anchors import Anchors
-from siamMask.utils.tracker_config import TrackerConfig
+from .utils.anchors import Anchors
+from .utils.tracker_config import TrackerConfig
 
-from siamMask.utils.config_helper import load_config
+from .utils.config_helper import load_config
 
 thrs = np.arange(0.3, 0.5, 0.05)
 

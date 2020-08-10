@@ -4,10 +4,8 @@ from ultimatelabeling.models.tracker import SocketTracker, KCFTracker
 from ultimatelabeling.models import Detection, FrameMode
 from ultimatelabeling.models import KeyboardListener
 import signal
-
-
-PORTS = [0, 8787, 8788]
-
+import os
+from subprocess import Popen
 
 class TrackingThread(QThread):
     err_signal = pyqtSignal(str)
@@ -121,8 +119,6 @@ class TrackingButtons(QGroupBox):
                 print("Thread is running.")
             else:
                 self.thread.start()
-                self.parent.select(self.index)
-
                 self.start_button.hide()
                 self.stop_button.show()
 
@@ -147,6 +143,7 @@ class TrackingManager(QGroupBox, KeyboardListener):
         super().__init__("Tracking")
         self.state = state
         self.selected = None
+        self.pid = None
 
         # define the trackers available
         self.trackers = [
@@ -172,13 +169,26 @@ class TrackingManager(QGroupBox, KeyboardListener):
 
         self.setLayout(vlayout)
 
+    def start_tracking_server(self):
+        self.pid = Popen(["bash", "-c", "CUDA_VISIBLE_DEVICES=0 python -m tracker -p 8787"]).pid
+        self.state.tracking_server_running = True
+        print("Tracking server started...")
+
+    def close_tracking_server(self):
+        print("closing tracking server")
+        os.system("kill {}".format(self.pid))
+        self.state.tracking_server_running = False
+        print("tracking server closed")
+
     def on_key_track(self, automatic):
         if self.selected is not None:
-            tracker = trackers[self.selected]
+            tracker = self.trackers[self.selected]
             if (automatic and self.automatic_tracking_checkbox.isChecked()) or not automatic:
                 if tracker.thread.isRunning():
+                    self.close_tracking_server()
                     tracker.on_stop_tracking()
                 else:
+                    self.start_tracking_server()
                     tracker.on_start_tracking()
 
     def on_enabled(self, index):

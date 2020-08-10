@@ -5,6 +5,10 @@ from .views import *
 from .models import State, StateListener, KeyboardNotifier
 from .styles import Theme
 
+import os
+from ultimatelabeling.models import StateListener
+from ultimatelabeling.config import OUTPUT_DIR, SERVER_DIR
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -65,7 +69,6 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event):
         print("exiting")
-        self.central_widget.ssh_login.closeServers()
         self.central_widget.state.track_info.save_to_disk()
         self.central_widget.state.save_state()
 
@@ -86,9 +89,8 @@ class CentralWidget(QWidget, StateListener):
         self.player = PlayerWidget(self.state)
         self.theme_picker = ThemePicker(self.state)
         self.options = Options(self.state)
-        self.ssh_login = SSHLogin(self.state)
 
-        self.detection_manager = DetectionManager(self.state, self.ssh_login)
+        self.detection_manager = DetectionManager(self.state)
         self.tracking_manager = TrackingManager(self.state)
         self.hungarian_button = HungarianManager(self.state)
         self.info_detection = InfoDetection(self.state)
@@ -152,8 +154,7 @@ class CentralWidget(QWidget, StateListener):
     def on_theme_change(self):
         app.setStyle("Fusion")
         app.setPalette(Theme.get_palette(self.state.theme))
-
-
+        
 if __name__ == '__main__':
     app = QApplication([])
     main_window = MainWindow()

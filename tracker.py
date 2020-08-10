@@ -136,5 +136,8 @@ if __name__ == "__main__":
     parser.add_argument("-p", "--port", type=int, default=PORT, help="socket port")
     args = parser.parse_args()
 
-    server = socketserver.TCPServer((HOST, args.port), TrackingHandler)
-    server.serve_forever()
+    try:
+        server = socketserver.TCPServer((HOST, args.port), TrackingHandler)
+        server.serve_forever()
+    except OSError:
+        print("Server already running")    

@@ -5,7 +5,6 @@ import re
 import numpy as np
 from PyQt5.QtCore import QThread, QMutex
 from ultimatelabeling.styles import Theme
-from .ssh_credentials import SSHCredentials
 from .track_info import TrackInfo
 from ultimatelabeling import utils
 from ultimatelabeling.config import DATA_DIR, STATE_PATH
@@ -31,7 +30,6 @@ class State:
         self.nb_frames = 0
         self.file_names = []
         self.theme = Theme.DARK
-        self.ssh_credentials = SSHCredentials()
         self.track_info = TrackInfo()
         self.current_detection = None
         self.frame_mode = FrameMode.MANUAL
