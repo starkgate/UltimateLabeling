@@ -57,7 +57,7 @@ class KeyboardNotifier:
     def add_listeners(self, *listeners):
         self.listeners.update(listeners)
 
-    def auto_track():
+    def auto_track(self):
         self.notify_listeners("on_key_track", True)
 
     def notify_listeners(self, method_name, *args):

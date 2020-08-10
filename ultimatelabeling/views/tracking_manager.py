@@ -72,6 +72,7 @@ class TrackingThread(QThread):
 class TrackingButtons(QGroupBox):
     def __init__(self, state, parent, index, name, thread):
         super().__init__(name)
+        self.pid = None
 
         self.state = state
         self.parent = parent
@@ -109,8 +110,7 @@ class TrackingButtons(QGroupBox):
 
     def on_start_tracking(self):
         if not self.state.tracking_server_running and self.index >= 1:
-            QMessageBox.warning(self, "", "Tracking server is not connected.")
-            return
+            self.start_tracking_server()
             
         if self.state.current_detection is None:
             print("No bounding box selected for tracking.")
@@ -125,10 +125,12 @@ class TrackingButtons(QGroupBox):
     def on_stop_tracking(self):
         if self.thread.isRunning():
             self.thread.stop()
+            self.stop_tracking_server()
 
     def on_finished_tracking(self):
         if self.thread.isRunning():
             self.thread.terminate()
+            self.stop_tracking_server()
 
         self.state.frame_mode = FrameMode.MANUAL
         self.state.notify_listeners("on_frame_mode_change")
@@ -138,12 +140,22 @@ class TrackingButtons(QGroupBox):
     def on_enabled(self):
         self.parent.on_enabled(self.index)
 
+    def start_tracking_server(self):
+        self.pid = Popen(["bash", "-c", "CUDA_VISIBLE_DEVICES=0 python -m tracker -p 8787"]).pid
+        self.state.tracking_server_running = True
+        print("Tracking server started...")
+
+    def close_tracking_server(self):
+        print("closing tracking server")
+        os.system("kill {}".format(self.pid))
+        self.state.tracking_server_running = False
+        print("tracking server closed")
+
 class TrackingManager(QGroupBox, KeyboardListener):
     def __init__(self, state):
         super().__init__("Tracking")
         self.state = state
         self.selected = None
-        self.pid = None
 
         # define the trackers available
         self.trackers = [
@@ -169,26 +181,13 @@ class TrackingManager(QGroupBox, KeyboardListener):
 
         self.setLayout(vlayout)
 
-    def start_tracking_server(self):
-        self.pid = Popen(["bash", "-c", "CUDA_VISIBLE_DEVICES=0 python -m tracker -p 8787"]).pid
-        self.state.tracking_server_running = True
-        print("Tracking server started...")
-
-    def close_tracking_server(self):
-        print("closing tracking server")
-        os.system("kill {}".format(self.pid))
-        self.state.tracking_server_running = False
-        print("tracking server closed")
-
     def on_key_track(self, automatic):
         if self.selected is not None:
             tracker = self.trackers[self.selected]
             if (automatic and self.automatic_tracking_checkbox.isChecked()) or not automatic:
                 if tracker.thread.isRunning():
-                    self.close_tracking_server()
                     tracker.on_stop_tracking()
                 else:
-                    self.start_tracking_server()
                     tracker.on_start_tracking()
 
     def on_enabled(self, index):
