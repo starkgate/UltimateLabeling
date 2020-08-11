@@ -7,7 +7,7 @@ from .styles import Theme
 
 import os
 from ultimatelabeling.models import StateListener
-from ultimatelabeling.config import OUTPUT_DIR, SERVER_DIR
+from ultimatelabeling.config import OUTPUT_DIR
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -71,6 +71,7 @@ class MainWindow(QMainWindow):
         print("exiting")
         self.central_widget.state.track_info.save_to_disk()
         self.central_widget.state.save_state()
+        exit()
 
 
 class CentralWidget(QWidget, StateListener):
@@ -159,5 +160,3 @@ if __name__ == '__main__':
     app = QApplication([])
     main_window = MainWindow()
     app.exec()
-
-

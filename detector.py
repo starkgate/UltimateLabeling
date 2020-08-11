@@ -6,6 +6,7 @@ import pickle
 import cv2
 import struct
 import socketserver
+import datetime
 import argparse
 from polygon import Bbox, Keypoints
 import utils
@@ -19,12 +20,10 @@ import numpy as np
 import openpifpaf.network
 import openpifpaf
 import glob
+from config import OUTPUT_DIR
+from class_names import DEFAULT_CLASS_NAMES
 import math
-
-
-HOST, PORT = "", 8786
-OK_SIGNAL = b"ok"
-TERMINATE_SIGNAL = b"terminate"
+import pandas as pd
 
 
 class Detection:
@@ -244,88 +243,48 @@ class OpenPifPafDetector(Detector):
             yield self.detect(image_paths, image_tensors, processed_images_cpu)
 
 
-class DetectionHandler(socketserver.BaseRequestHandler):
+class DetectionHandler():
     PAYLOAD_SIZE = struct.calcsize(">L")
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, detector, crop_area, sequence):
+        self.detector = detector
+        self.crop_area = crop_area
 
-    def handle(self):
-
-        self.send_ok_signal()
-
-        options = self.receive_options()
-        print(options)
-
-        if options["detector"] == "YOLO":
-            detector = object_detector
-        elif options["detector"] == "OpenPifPaf":
-            detector = pose_detector
-        else:
+        if not os.path.exists(sequence):
+            write_running_info(error="No such file or directory: {}".format(sequence))
             return
 
-        crop_area = options["crop_area"]
+        file_names = sorted(glob.glob('{}/*.jpg'.format(sequence)), key=utils.natural_sort_key)
+        video_name = os.path.basename(sequence)
+        nb_frames = len(file_names)
 
-        try:
-            if options["filename"] is not None:
-                if not os.path.exists(options["filename"]):
-                    self.send_error("No such file on server: {}".format(options["filename"]))
+        track_info = TrackInfo(video_name)
+        start_time = datetime.datetime.now()
 
-                detections = detector.detect_single_image(options["filename"], crop_area)
-                self.send_detection(detections)
+        for frame, detections in enumerate(detector.detect_batch(file_names, crop_area)):
+            file_path = file_names[frame]
+            base = os.path.basename(file_path)
+            file_name = os.path.splitext(base)[0]
 
-            elif options["seq_path"] is not None:
-                if not os.path.exists(options["seq_path"]):
-                    self.send_error("No such folder on server: {}".format(options["seq_path"]))
-
-                file_names = sorted(glob.glob('{}/*.jpg'.format(options["seq_path"])), key=utils.natural_sort_key)
-
-                for detections in detector.detect_batch(file_names, crop_area):
-                    self.send_detection(detections)
-        except Exception as e:
-            self.send_error(str(e))
+            track_info.write_detections(file_name, detections)
+            write_running_info(video_name, start_time, frame, nb_frames)
 
         torch.cuda.empty_cache()
+        track_info.save_to_disk()
 
-    def receive_image_path(self):
-        data = self.request.recv(1024)
-        image_path = data.decode()
-        return image_path
+    def write_running_info(video_name="", start_time="", frame=0, nb_frames=0, error=None):
+        data = {
+            "video_name": video_name,
+            "current_frame": frame + 1,
+            "total_frame": nb_frames,
+            "start_time": str(start_time),
+            "last_update": str(datetime.datetime.now()),
+        }
 
-    def receive_options(self):
-        data = self.request.recv(4096)
-        options = pickle.loads(data)
-        return options
+        if error is not None:
+            data["error"] = error
 
-    def receive_crop_area(self):
-        data = self.request.recv(1024)
-        crop_area = pickle.loads(data)
+        file_name = os.path.join(OUTPUT_DIR, "running_info.json")
 
-        if not np.any(crop_area):
-            return
-
-        return crop_area
-
-    def send_detection(self, detections):
-        json_data = json.dumps([d.to_json() for d in detections])
-        utils.send_data(self.request, json_data.encode())
-
-    def send_ok_signal(self):
-        self.request.sendall(OK_SIGNAL)
-
-    def send_error(self, error_msg):
-        json_data = json.dumps({
-            'error': error_msg
-        })
-        utils.send_data(self.request, json_data.encode())
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Detection server")
-    args = parser.parse_args()
-
-    object_detector = YOLODetector()
-    pose_detector = OpenPifPafDetector()
-
-    with socketserver.TCPServer((HOST, PORT), DetectionHandler) as server:
-        server.serve_forever()
+        with open(file_name, "w") as f:
+            json.dump(data, f)

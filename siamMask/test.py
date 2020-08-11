@@ -306,7 +306,7 @@ def siamese_track(state, im, mask_enable=False, refine_enable=False, use_cuda=Tr
     state['target_sz'] = target_sz
     state['score'] = score
     state['mask'] = mask_in_img if mask_enable else []
-    state['ploygon'] = rbox_in_img if mask_enable else []
+    state['polygon'] = rbox_in_img if mask_enable else []
     return state
 
 
@@ -329,7 +329,7 @@ def track_vot(model, video, hp=None, mask_enable=False, refine_enable=False):
         elif f > start_frame:  # tracking
             state = siamese_track(state, im, mask_enable, refine_enable)  # track
             if mask_enable:
-                location = state['ploygon'].flatten()
+                location = state['polygon'].flatten()
                 mask = state['mask']
             else:
                 location = cxy_wh_2_rect(state['target_pos'], state['target_sz'])

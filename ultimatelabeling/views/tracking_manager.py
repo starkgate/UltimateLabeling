@@ -1,9 +1,10 @@
 from PyQt5.QtWidgets import QPushButton, QGroupBox, QVBoxLayout, QHBoxLayout, QStyle, QPlainTextEdit, QMessageBox, QCheckBox
 from PyQt5.QtCore import QThread, pyqtSignal
-from ultimatelabeling.models.tracker import SocketTracker, KCFTracker
+from ultimatelabeling.models.tracker import SiamMaskTracker, KCFTracker
 from ultimatelabeling.models import Detection, FrameMode
 from ultimatelabeling.models import KeyboardListener
 import signal
+import time
 import os
 from subprocess import Popen
 
@@ -32,6 +33,7 @@ class TrackingThread(QThread):
 
         self.state.frame_mode = FrameMode.CONTROLLED
         self.selected = True
+
 
         try:
             self.tracker.init(self.state.file_names[init_frame], init_bbox)
@@ -72,8 +74,6 @@ class TrackingThread(QThread):
 class TrackingButtons(QGroupBox):
     def __init__(self, state, parent, index, name, thread):
         super().__init__(name)
-        self.pid = None
-
         self.state = state
         self.parent = parent
         self.index = index
@@ -91,7 +91,7 @@ class TrackingButtons(QGroupBox):
 
         self.stop_button = QPushButton("Stop")
         self.stop_button.setIcon(self.style().standardIcon(QStyle.SP_DialogNoButton))
-        self.stop_button.clicked.connect(self.on_stop_tracking)
+        self.stop_button.clicked.connect(self.on_finished_tracking)
         self.stop_button.setToolTip("Stop tracking")
 
         self.enable_button = QPushButton("Enable")
@@ -109,9 +109,6 @@ class TrackingButtons(QGroupBox):
         QMessageBox.warning(self, "", "Error: {}".format(err_message))
 
     def on_start_tracking(self):
-        if not self.state.tracking_server_running and self.index >= 1:
-            self.start_tracking_server()
-            
         if self.state.current_detection is None:
             print("No bounding box selected for tracking.")
         else:
@@ -125,12 +122,13 @@ class TrackingButtons(QGroupBox):
     def on_stop_tracking(self):
         if self.thread.isRunning():
             self.thread.stop()
-            self.stop_tracking_server()
+
+        self.stop_button.hide()
+        self.start_button.show()
 
     def on_finished_tracking(self):
         if self.thread.isRunning():
             self.thread.terminate()
-            self.stop_tracking_server()
 
         self.state.frame_mode = FrameMode.MANUAL
         self.state.notify_listeners("on_frame_mode_change")
@@ -139,17 +137,6 @@ class TrackingButtons(QGroupBox):
 
     def on_enabled(self):
         self.parent.on_enabled(self.index)
-
-    def start_tracking_server(self):
-        self.pid = Popen(["bash", "-c", "CUDA_VISIBLE_DEVICES=0 python -m tracker -p 8787"]).pid
-        self.state.tracking_server_running = True
-        print("Tracking server started...")
-
-    def close_tracking_server(self):
-        print("closing tracking server")
-        os.system("kill {}".format(self.pid))
-        self.state.tracking_server_running = False
-        print("tracking server closed")
 
 class TrackingManager(QGroupBox, KeyboardListener):
     def __init__(self, state):
@@ -160,7 +147,7 @@ class TrackingManager(QGroupBox, KeyboardListener):
         # define the trackers available
         self.trackers = [
             TrackingButtons(self.state, self, 0, "KCF", TrackingThread(self.state, tracker=KCFTracker, state=self.state)),
-            TrackingButtons(self.state, self, 1, "SiamMask", TrackingThread(self.state, tracker=SocketTracker, port=8787))
+            TrackingButtons(self.state, self, 1, "SiamMask", TrackingThread(self.state, tracker=SiamMaskTracker))
         ]
         self.trackers[0].setToolTip("Algorithm-based object tracking method")
         self.trackers[1].setToolTip("Neural network-based object tracking method")
