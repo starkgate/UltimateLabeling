@@ -537,7 +537,7 @@ class ImageWidget(QWidget, StateListener, KeyboardListener):
             frame = self.state.current_frame
             while frame > 0 and self.state.check_frames_equal(frame - 1, frame):
                 frame -= 1 
-            self.state.set_current_frame(frame)
+            self.state.set_current_frame(frame - 1)
         else:
             frame = self.state.current_frame
             while frame < self.state.nb_frames and self.state.check_frames_equal(frame, frame + 1):

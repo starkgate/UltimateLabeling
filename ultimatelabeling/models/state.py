@@ -63,6 +63,9 @@ class State:
         self.listeners = set()
 
     def get_file_name(self, frame=None):
+        if self.current_frame >= self.nb_frames:
+            self.current_frame = self.nb_frames - 1
+
         if frame is None:
             frame = self.current_frame
 
