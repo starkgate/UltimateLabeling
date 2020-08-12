@@ -24,10 +24,10 @@ class KeyboardNotifier:
             self.notify_listeners("on_key_play_pause")
 
         if event.key() in self.key_dict["left"]:
-            self.notify_listeners("on_key_left")
+            self.notify_listeners("on_key_left", event.modifiers())
 
         if event.key() in self.key_dict["right"]:
-            self.notify_listeners("on_key_right")
+            self.notify_listeners("on_key_right", event.modifiers())
 
         if event.key() == Qt.Key_Control:
             self.notify_listeners("on_key_ctrl", True)
@@ -73,10 +73,10 @@ class KeyboardListener:
     def on_key_ctrl(self, holding):
         pass
 
-    def on_key_left(self):
+    def on_key_left(self, modifiers):
         pass
 
-    def on_key_right(self):
+    def on_key_right(self, modifiers):
         pass
 
     def on_key_delete(self):

@@ -91,7 +91,7 @@ class TrackingButtons(QGroupBox):
 
         self.stop_button = QPushButton("Stop")
         self.stop_button.setIcon(self.style().standardIcon(QStyle.SP_DialogNoButton))
-        self.stop_button.clicked.connect(self.on_finished_tracking)
+        self.stop_button.clicked.connect(self.on_stop_tracking)
         self.stop_button.setToolTip("Stop tracking")
 
         self.enable_button = QPushButton("Enable")

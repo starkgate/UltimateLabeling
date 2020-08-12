@@ -5,6 +5,12 @@ from PyQt5.QtGui import QKeyEvent, QIntValidator
 from ultimatelabeling.models import StateListener, KeyboardListener, FrameMode
 from ultimatelabeling.config import RESOURCES_DIR
 
+switch = {
+    Qt.ShiftModifier: 2,
+    Qt.AltModifier: 5,
+    Qt.ControlModifier: 10,
+    Qt.MetaModifier: 10
+}
 
 class VideoSlider(QWidget, StateListener, KeyboardListener):
     def __init__(self, state, keyboard_notifier):
@@ -74,24 +80,24 @@ class VideoSlider(QWidget, StateListener, KeyboardListener):
         self.frame_number.setValidator(QIntValidator(0, self.state.nb_frames - 1, self))
         self.slider.setMaximum(self.state.nb_frames - 1)
 
-    def on_key_left(self):
+    def on_key_left(self, modifier):
         current_detection = None
         if self.state.current_detection is not None:
             current_detection = self.state.current_detection.copy()
 
-        self.state.increase_current_frame(frame_mode=FrameMode.MANUAL, speed=-1)
+        self.state.increase_current_frame(frame_mode=FrameMode.MANUAL, speed=-1*switch.get(modifier, 1))
 
         if current_detection and self.state.copy_annotations_option:
             track_ids = [d.track_id for d in self.state.track_info.detections]
             if current_detection.track_id not in track_ids:
                 self.state.set_current_detection(current_detection)
 
-    def on_key_right(self):
+    def on_key_right(self, modifier):
         current_detection = None
         if self.state.current_detection is not None:
             current_detection = self.state.current_detection.copy()
 
-        self.state.increase_current_frame(frame_mode=FrameMode.MANUAL, speed=+1)
+        self.state.increase_current_frame(frame_mode=FrameMode.MANUAL, speed=+1*switch.get(modifier, 1))
 
         if current_detection and self.state.copy_annotations_option:
             track_ids = [d.track_id for d in self.state.track_info.detections]
