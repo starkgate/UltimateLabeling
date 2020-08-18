@@ -14,6 +14,7 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         self.setWindowTitle("UltimateLabeler")
+        self.showMaximized()
 
         self.central_widget = CentralWidget()
         self.central_widget.setFocusPolicy(Qt.StrongFocus)
